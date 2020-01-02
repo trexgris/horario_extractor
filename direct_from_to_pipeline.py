@@ -1,51 +1,77 @@
 import re
 import requests
+import json
+import os
 from bs4 import BeautifulSoup
+import codecs
+from request import WeekScheduleDirectRoute
 
 URL = 'http://horariodebuses.com/EN/cr/overview.php?lang=en'
 MAP_CODE = 'map.html'
+JSON_FILE  = 'COSTA_RICA_DIRECT_ROUTES.json'
+
 class FromToPipeline:
     def __init__(self):
         pass
 
     def Process(self, elem):
-        ll = []
+        tos = []
         soup = BeautifulSoup(elem)
         From = soup.find('b').text
-     #   if From == 'Golfito':
-     #       b = True
         tmp = soup.find_all('a')
         for l in tmp:
-            to = re.sub('<[^<]+?>', '', l.next)
+            tos.append(re.sub('<[^<]+?>', '', l.next))
+        return (From, tos)
 
-
-    def Read(self):
+    def Read(self, force):
+        #and casts to json
+        if os.path.isfile(JSON_FILE) and force is False:
+            return
+        json_file = {}
         with open(MAP_CODE) as open_file:
             data = open_file.read()
             m = re.findall('bindPopup\("(.*?)",{', data, re.DOTALL)
             for el in m:
-                self.Process(el)
+                ret = self.Process(el)
+                if len(ret) == 2 :
+                    json_file[ret[0]] = ret[1]
+        
+        with open(JSON_FILE, 'w', encoding='utf-8') as fp:
+            json.dump(json_file, fp, sort_keys=True, ensure_ascii=False)
 
-
-    def Exec(self):
+    def MapDirectRoutesToJson(self, force_ = True):
+        if force_ is False:
+            return
         r = requests.get(URL)
         file = open(MAP_CODE, "w")
         file.write(r.text)
         file.close()
-        self.Read()
+        self.Read(force=force_)
+
+    def CreateFolderFromTos(self, f, specific_from = None):
+        data = {}
+        with open(f, encoding='utf-8') as json_file:
+            data = json.load(json_file)
+
+        if specific_from:
+            try:
+                tos = data.get(specific_from)
+                #test zone
+                week = WeekScheduleDirectRoute(specific_from, 'Conte')
+                week.Exec(verbose = True)
+                t = ''
+                #todo, organise jsons in directories and aoso on like specified sur mon cahier
+                #
+            except Exception as e:
+                print(e)
 
 
-    
 
 def main():
     pipe = FromToPipeline()
-    pipe.Exec()
-    #text1 = 'var nid17 = L.marker([23.003394491348782, -82.38608837127686], {icon: TransIcon1, itle:"marker_16"}).addTo(map).bindPopup("<b>Boyeros</b><br>Direct connections to:<br />- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Alquizar\">Alquizar<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Artemisa\">Artemisa<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Güira de Melena\">Güira de Melena<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Herradura\">Herradura<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=La Habana\">La Habana<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=La Salud\">La Salud<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Los Palacios\">Los Palacios<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Pinar del Río\">Pinar del Río<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Puerta de Golpe\">Puerta de Golpe<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Rincón\">Rincón<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=San Antonio de los Baños\">San Antonio de los Baños<\/a>",{maxWidth: 600, maxHeight: 200}); '
+    pipe.MapDirectRoutesToJson( not os.path.isfile(JSON_FILE))
+    pipe.CreateFolderFromTos(JSON_FILE, 'Golfito')
 
-    #text = 'var nid16 = L.marker([23.003394491348782, -82.38608837127686], {icon: TransIcon1, itle:"marker_16"}).addTo(map).bindPopup("<b>Boyeros</b><br>Direct connections to:<br />- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Alquizar\">Alquizar<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Artemisa\">Artemisa<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Güira de Melena\">Güira de Melena<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Herradura\">Herradura<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=La Habana\">La Habana<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=La Salud\">La Salud<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Los Palacios\">Los Palacios<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Pinar del Río\">Pinar del Río<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Puerta de Golpe\">Puerta de Golpe<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=Rincón\">Rincón<\/a><br>- <a href=\"http://horariodebuses.com/EN/cu/index.php?fromClass=Boyeros&amp;toClass=San Antonio de los Baños\">San Antonio de los Baños<\/a>",{maxWidth: 600, maxHeight: 200}); '
-    #fin = text1 + text
-    #m = re.findall('bindPopup\("(.*?)",{', fin, re.DOTALL)
-    #print(m)
 
 if __name__ == '__main__':
     main()

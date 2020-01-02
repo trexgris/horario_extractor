@@ -13,7 +13,7 @@ RESP  = "resp.html"
 URL = 'http://horariodebuses.com/EN/cr/index.php'
 
 #should be used for direct routes
-class DayScheduleDirectRoute:
+class WeekScheduleDirectRoute:
     def __init__(self, fromClass, toClass):
         data = {}
         data['fromClass'] = fromClass
@@ -46,7 +46,7 @@ class DayScheduleDirectRoute:
             return True
         return False
 
-    def PopulateSchedule(self, body_dict):
+    def PopulateSchedule(self, body_dict, verbose = False):
         ret = {}
         if len(body_dict) == 0:
             return True
@@ -60,12 +60,16 @@ class DayScheduleDirectRoute:
                 if match_day is None:    
                     continue                
                 self.__fullschedule[(match_day, key)] = val
+                if verbose is True:
+                    print('Doing ' + match_day)
             except Exception  as e:
                 print(e)
                 continue
         return False
     
-    def Exec(self):
+    def Exec(self, verbose = False):
+        if verbose is True:
+            print('Verbose enabled')
         r = requests.post(URL, data=self.__data)
         file = open(RESP, "w")
         file.write(r.text)
@@ -79,11 +83,11 @@ class DayScheduleDirectRoute:
         while True:
             if wait_until < datetime.now():
                 break    
-            time.sleep(5)
+            time.sleep(3)
             resp = ResponseToJson(RESP)
-            if resp.PastLastDate(29):
+            if resp.PastLastDate(29, verbose):
                 ret = resp.ProcessBody()
-                self.PopulateSchedule(ret)
+                self.PopulateSchedule(ret, verbose = verbose)
                 break
             ret_later = resp.GetLaterPost()
             if ret_later is None:
@@ -93,9 +97,8 @@ class DayScheduleDirectRoute:
             file.write(r.text)
             file.close()
 def main():
-    day = DayScheduleDirectRoute('Golfito', 'Conte')
-    day.Exec()
-    tt = {}
+    week = WeekScheduleDirectRoute('Golfito', 'Conte')
+    week.Exec()
    
   
 
