@@ -2,6 +2,7 @@ import re
 import requests
 import json
 import os
+import os.path
 from bs4 import BeautifulSoup
 import codecs
 from request import WeekScheduleDirectRoute
@@ -20,7 +21,7 @@ class FromToPipeline:
         From = soup.find('b').text
         tmp = soup.find_all('a')
         for l in tmp:
-            tos.append(re.sub('<[^<]+?>', '', l.next))
+            tos.append(re.sub('<[^<]+?>', '', str(l.next)))
         return (From, tos)
 
     def Read(self, force):
@@ -39,16 +40,17 @@ class FromToPipeline:
         with open(JSON_FILE, 'w', encoding='utf-8') as fp:
             json.dump(json_file, fp, sort_keys=True, ensure_ascii=False)
 
-    def MapDirectRoutesToJson(self, force_ = True):
-        if force_ is False:
+    def MapDirectRoutesToJson(self, force = False):
+        if force is False:
             return
         r = requests.get(URL)
         file = open(MAP_CODE, "w")
         file.write(r.text)
         file.close()
-        self.Read(force=force_)
+        self.Read(force=force)
 
-    def CreateFolderFromTos(self, f, specific_from = None):
+    def CreateFoldersFromTo(self, f, specific_from = None):
+        #not finished
         data = {}
         with open(f, encoding='utf-8') as json_file:
             data = json.load(json_file)
@@ -58,19 +60,37 @@ class FromToPipeline:
                 tos = data.get(specific_from)
                 #test zone
                 week = WeekScheduleDirectRoute(specific_from, 'Conte')
+                json_name = 'from_'+specific_from +'_to_'
                 week.Exec(verbose = True)
+                week.FormatFullSchedule()
                 t = ''
                 #todo, organise jsons in directories and aoso on like specified sur mon cahier
                 #
             except Exception as e:
                 print(e)
 
+    def MakeFromToFolder(self, From, To, force=False):
+        p = str(From)+'/'+str(To)
+        if not os.path.isdir(p):
+            os.makedirs(p)
+        json_name = 'from_'+From +'_to_'+To+'.json'
+        if not os.path.isfile(json_name) and not force: #force = redo
+            week = WeekScheduleDirectRoute(From, To)
+            week.Exec(verbose=True)
+            to_write = week.FormatFullSchedule() #or here to file?
+            #todo:tofile
+
+            
+
 
 
 def main():
     pipe = FromToPipeline()
-    pipe.MapDirectRoutesToJson( not os.path.isfile(JSON_FILE))
-    pipe.CreateFolderFromTos(JSON_FILE, 'Golfito')
+    exists = os.path.isfile(JSON_FILE)
+
+    pipe.FromToFolder('Test', 'A')
+   # pipe.MapDirectRoutesToJson(not exists)
+   # pipe.CreateFolderFromTos(JSON_FILE, 'Golfito')
 
 
 if __name__ == '__main__':
