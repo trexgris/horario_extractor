@@ -41,13 +41,8 @@ class WeekScheduleDirectRoute:
 
 
     def FormatFullSchedule(self,force=False):
-        #not finished
-        if os.path.isfile(SCHEDULE_FILE) and force is False:
-            with open(SCHEDULE_FILE, encoding='utf-8') as json_file:
-                data = json.load(json_file)
-                return data
-
         ret = defaultdict(list)
+        stops = {} #not optimised at all
         for key, val in self.__fullschedule.items():
             if len(key) != 2:
                 raise Exception('request.py - FormatFullSchedule(): Tuple isnt of size 2')
@@ -58,16 +53,26 @@ class WeekScheduleDirectRoute:
             from_coords = re.findall("\d+\.\d+", from_link) #dirty regex
             to_coords = re.findall("\d+\.\d+", to_link) #dirty regex
 
+            key_from = 0.0
             if len(from_coords) != 0: #dirty hack
-                val['from_lon'] = from_coords[0]
-                val['from_lat'] = from_coords[1]
+                from_lon = from_coords[0]
+                from_lat = from_coords[1]
+                val['from_lon'] = from_lon
+                val['from_lat'] = from_lat
+                key_from = from_lon+from_lat
+
+            if key_from not in stops and key_from is not 0.0:
+                stops[key_from]
+
+
+            key_to = 0.0
             if len(to_coords) != 0: #dirty hack
-                val['to_lon'] = to_coords[0]
-                val['too_lat'] = to_coords[1]
+                to_lon = to_coords[0]
+                to_lat = to_coords[1]
+                val['to_lon'] = to_lon
+                val['too_lat'] = to_lat
             ret[day].append(val)
             #todo: production refactor
-        with open(SCHEDULE_FILE, 'w', encoding='utf-8') as fp:
-            json.dump(ret, fp, sort_keys=True, ensure_ascii=False)
         return ret
 
         
@@ -132,18 +137,12 @@ class WeekScheduleDirectRoute:
 def main():
   #  week = WeekScheduleDirectRoute('Golfito', 'Conte')
   #  week.Exec()
+    tt = {
+
+        {'a','b'} : {'monday'}
+    }
    
-    test = defaultdict(list)
-
-    test['a'].append('a')
-    test['a'].append('b')
-    test['a'].append('c')
-
-
-    st = 'http://horariodebuses.com/cr/busstop.php?city=Golfito&lang=en&ruta=bu,f&comp=&tele=&cweb=&ort=Bus%20Terminal&lon=-83.1650984287262&lat=8.63732820166971'
-    rest = re.findall("\d+\.\d+",st)
-    n=str.split("?long=?&lat=");
-
+    res = json.dumps(tt)
 
     tt =''
 

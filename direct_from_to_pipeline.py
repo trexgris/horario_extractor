@@ -74,10 +74,19 @@ class FromToPipeline:
         if not os.path.isdir(p):
             os.makedirs(p)
         json_name = 'from_'+From +'_to_'+To+'.json'
-        if not os.path.isfile(json_name) and not force: #force = redo
+        if not os.path.isfile(p+'/'+json_name) and not force: #force = redo
             week = WeekScheduleDirectRoute(From, To)
             week.Exec(verbose=True)
             to_write = week.FormatFullSchedule() #or here to file?
+            to_write['from'] = From
+            to_write['to'] = To
+
+        with open(p+'/'+json_name, 'w', encoding='utf-8') as fp:
+            json.dump(to_write, fp, sort_keys=True, ensure_ascii=False)
+
+
+         
+
             #todo:tofile
 
             
@@ -88,7 +97,7 @@ def main():
     pipe = FromToPipeline()
     exists = os.path.isfile(JSON_FILE)
 
-    pipe.FromToFolder('Test', 'A')
+    pipe.MakeFromToFolder('Golfito', 'Conte')
    # pipe.MapDirectRoutesToJson(not exists)
    # pipe.CreateFolderFromTos(JSON_FILE, 'Golfito')
 
