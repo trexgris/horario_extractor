@@ -37,7 +37,7 @@ class FromToPipeline:
                 ret = self.Process(el)
                 if len(ret) == 2 :
                     json_file[ret[0]] = ret[1]
-        
+
         with open(JSON_FILE, 'w', encoding='utf-8') as fp:
             json.dump(json_file, fp, sort_keys=True, ensure_ascii=False)
 
@@ -84,7 +84,7 @@ class FromToPipeline:
 
         with open(p+'/'+json_name, 'w', encoding='utf-8') as fp:
             json.dump(to_write, fp, sort_keys=True, ensure_ascii=False)
-         
+
 
     def ConvertRawToStops(self, raw, force=False):
         try:
@@ -127,22 +127,12 @@ class FromToPipeline:
                             tmp['lat'] = from_lat
                             schedule = {}
                             schedule[key] = []
-    
-                           # schedule[key].append(detail_for_day)
                             tmp['schedule'] = schedule
                             stops[key_from] = tmp
-                        if stops[key_from]['schedul'] #check if theres a list or not TODO
+                        if key not in stops[key_from]['schedule']: #check if theres a list or not
+                            stops[key_from]['schedule'][key] = []
                         stops[key_from]['schedule'][key].append(detail_for_day)
 
-
-
-
-
-
-
-
-
-            tt = ''
         except Exception as e:
              print(e)
 
@@ -151,11 +141,26 @@ def main():
     pipe = FromToPipeline()
     exists = os.path.isfile(JSON_FILE)
 
-    #pipe.MakeRawFromRequest('Golfito', 'Conte')
+#  redone = {}
+#  redone[1] = {}
+#  if 'schedule' not in redone[1]:
+#      redone[1]['schedule'] = {}
+#  if 'key' not in redone[1]['schedule']:
+#      redone[1]['schedule']['key'] = []
+#  else :
+#      redone[1]['schedule']['key'].append('a')
+#
+#  if 'key' not in redone[1]['schedule']:
+#      redone[1]['schedule']['key'] = []
+#  else :
+#      redone[1]['schedule']['key'].append('a')
+#
+#  #pipe.MakeRawFromRequest('Golfito', 'Conte')
 
     with open('from_Golfito_to_Conte.json', 'r') as f:
         raw = json.load(f)
-        pipe.ConvertRawToStops(raw)
+    pipe.ConvertRawToStops(raw)
+
    # pipe.MapDirectRoutesToJson(not exists)
    # pipe.CreateFolderFromTos(JSON_FILE, 'Golfito')
 
