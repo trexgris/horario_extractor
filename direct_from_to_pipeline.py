@@ -6,6 +6,7 @@ import os.path
 from bs4 import BeautifulSoup
 import codecs
 from request import WeekScheduleDirectRoute
+import types
 
 URL = 'http://horariodebuses.com/EN/cr/overview.php?lang=en'
 MAP_CODE = 'map.html'
@@ -69,7 +70,7 @@ class FromToPipeline:
             except Exception as e:
                 print(e)
 
-    def MakeFromToFolder(self, From, To, force=False):
+    def MakeRawFromRequest(self, From, To, force=False):
         p = str(From)+'/'+str(To)
         if not os.path.isdir(p):
             os.makedirs(p)
@@ -83,21 +84,78 @@ class FromToPipeline:
 
         with open(p+'/'+json_name, 'w', encoding='utf-8') as fp:
             json.dump(to_write, fp, sort_keys=True, ensure_ascii=False)
-
-
          
 
-            #todo:tofile
+    def ConvertRawToStops(self, raw, force=False):
+        try:
+            if not isinstance(raw, dict):
+                return
+            week_map = {
+                'Mo':'monday',
+                'Tu':'tuesday',
+                'We':'wednesday',
+                'Th':'thursday',
+                'Fr':'friday',
+                'Sa':'saturday',
+                'Su':'sunday'
+            }
+            From = raw.get('from')
+            To = raw.get('to')
+            p = str(From)+'/'+str(To)
+            stops_name = 'from_'+From+'_to_'+To+'_stops.json'
+            stops = {}
+            del raw['from']
+            del raw['to']
+            if not os.path.isfile(p+'/'+stops_name) and not force: #force = redo
+                for key, time in raw.items():
+                    for val in time:
+                        day = key
+                        from_lon = float(val.get('from_lon'))
+                        from_lat = float(val.get('from_lat'))
+                        key_from = from_lon + from_lat
 
-            
 
+                        detail_for_day = {} #dep time dep arr day arr remarks
+                        detail_for_day['time_dep'] = val.get('time_dep')
+                        detail_for_day['time_arr'] = val.get('time_arr')
+                        detail_for_day['remarks'] = val.get('remarks')
+                        detail_for_day['date_arr'] = week_map.get(val.get('date_arr')[:2])
+
+                        if key_from not in stops:
+                            tmp = {}
+                            tmp['lon'] = from_lon
+                            tmp['lat'] = from_lat
+                            schedule = {}
+                            schedule[key] = []
+    
+                           # schedule[key].append(detail_for_day)
+                            tmp['schedule'] = schedule
+                            stops[key_from] = tmp
+                        if stops[key_from]['schedul'] #check if theres a list or not TODO
+                        stops[key_from]['schedule'][key].append(detail_for_day)
+
+
+
+
+
+
+
+
+
+            tt = ''
+        except Exception as e:
+             print(e)
 
 
 def main():
     pipe = FromToPipeline()
     exists = os.path.isfile(JSON_FILE)
 
-    pipe.MakeFromToFolder('Golfito', 'Conte')
+    #pipe.MakeRawFromRequest('Golfito', 'Conte')
+
+    with open('from_Golfito_to_Conte.json', 'r') as f:
+        raw = json.load(f)
+        pipe.ConvertRawToStops(raw)
    # pipe.MapDirectRoutesToJson(not exists)
    # pipe.CreateFolderFromTos(JSON_FILE, 'Golfito')
 

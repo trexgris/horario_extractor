@@ -15,6 +15,7 @@ URL = 'http://horariodebuses.com/EN/cr/index.php'
 SCHEDULE_FILE = 'golfito_conte_week_schedule.json'
 #should be used for direct routes
 class WeekScheduleDirectRoute:
+    
     def __init__(self, fromClass, toClass):
         data = {}
         data['fromClass'] = fromClass
@@ -42,7 +43,6 @@ class WeekScheduleDirectRoute:
 
     def FormatFullSchedule(self,force=False):
         ret = defaultdict(list)
-        stops = {} #not optimised at all
         for key, val in self.__fullschedule.items():
             if len(key) != 2:
                 raise Exception('request.py - FormatFullSchedule(): Tuple isnt of size 2')
@@ -53,19 +53,11 @@ class WeekScheduleDirectRoute:
             from_coords = re.findall("\d+\.\d+", from_link) #dirty regex
             to_coords = re.findall("\d+\.\d+", to_link) #dirty regex
 
-            key_from = 0.0
             if len(from_coords) != 0: #dirty hack
                 from_lon = from_coords[0]
                 from_lat = from_coords[1]
                 val['from_lon'] = from_lon
                 val['from_lat'] = from_lat
-                key_from = from_lon+from_lat
-
-            if key_from not in stops and key_from is not 0.0:
-                stops[key_from]
-
-
-            key_to = 0.0
             if len(to_coords) != 0: #dirty hack
                 to_lon = to_coords[0]
                 to_lat = to_coords[1]
