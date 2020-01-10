@@ -112,7 +112,7 @@ class WeekScheduleDirectRoute:
 #to avoid timeout -> process only day?
         while True:
             if wait_until < datetime.now():
-                break    
+                break
             time.sleep(3)
             resp = ResponseToJson(RESP)
             if resp.PastLastDate(29, verbose):
@@ -121,11 +121,20 @@ class WeekScheduleDirectRoute:
                 break
             ret_later = resp.GetLaterPost()
             if ret_later is None:
-                break
+                except 'RET_LATER IS NONE' #BUG
+                return
+            if ret_later is {}:
+                ret_later = self.UpdatePostDataWithLastDate(resp) #test golfito - buenos aires
+
             r = requests.post(URL, data=ret_later)
             file = open(RESP, "w")
             file.write(r.text)
             file.close()
+
+    def UpdatePostDataWithLastDate(self, resp):
+        resp.get
+
+
 def main():
   #  week = WeekScheduleDirectRoute('Golfito', 'Conte')
   #  week.Exec()

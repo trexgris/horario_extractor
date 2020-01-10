@@ -51,7 +51,7 @@ class FromToPipeline:
         self.Read(force=force)
 
     def CreateFoldersFromTo(self, f, specific_from = None):
-        #not finished
+        #not finished #edit : ?
         data = {}
         with open(f, encoding='utf-8') as json_file:
             data = json.load(json_file)
@@ -59,14 +59,11 @@ class FromToPipeline:
         if specific_from:
             try:
                 tos = data.get(specific_from)
-                #test zone
                 week = WeekScheduleDirectRoute(specific_from, 'Conte')
                 json_name = 'from_'+specific_from +'_to_'
                 week.Exec(verbose = True)
                 week.FormatFullSchedule()
-                t = ''
-                #todo, organise jsons in directories and aoso on like specified sur mon cahier
-                #
+
             except Exception as e:
                 print(e)
 
@@ -75,15 +72,16 @@ class FromToPipeline:
         if not os.path.isdir(p):
             os.makedirs(p)
         json_name = 'from_'+From +'_to_'+To+'.json'
-        if not os.path.isfile(p+'/'+json_name) and not force: #force = redo
+        if not os.path.isfile(p+'/'+json_name) or not force: #force = redo
             week = WeekScheduleDirectRoute(From, To)
             week.Exec(verbose=True)
             to_write = week.FormatFullSchedule() #or here to file?
             to_write['from'] = From
             to_write['to'] = To
 
-        with open(p+'/'+json_name, 'w', encoding='utf-8') as fp:
-            json.dump(to_write, fp, sort_keys=True, ensure_ascii=False)
+            with open(p+'/'+json_name, 'w', encoding='utf-8') as fp:
+                json.dump(to_write, fp, sort_keys=True, ensure_ascii=False)
+            return to_write
 
 
     def ConvertRawToStops(self, raw, force=False):
@@ -106,7 +104,7 @@ class FromToPipeline:
             stops = {}
             del raw['from']
             del raw['to']
-            if not os.path.isfile(p+'/'+stops_name) and not force: #force = redo
+            if not os.path.isfile(p+'/'+stops_name) or force: #force = redo
                 for key, time in raw.items():
                     for val in time:
                         day = key
@@ -133,35 +131,36 @@ class FromToPipeline:
                             stops[key_from]['schedule'][key] = []
                         stops[key_from]['schedule'][key].append(detail_for_day)
 
+                with open(p+'/'+stops_name, 'w', encoding='utf-8') as fp:
+                    json.dump(stops, fp, sort_keys=True, ensure_ascii=False)
+                return stops
         except Exception as e:
              print(e)
+
+    def GenerateNode(self, From):
+        Map = {}
+        exists = os.path.isfile(JSON_FILE)
+        self.MapDirectRoutesToJson(not exists)
+        with open(JSON_FILE, 'r', encoding='utf-8') as f:
+            Map = json.load(f)
+
+        Tos = Map.get(From)
+        for To in Tos:
+            raw = self.MakeRawFromRequest(From, To)
+            stops = self.ConvertRawToStops(raw)
+
 
 
 def main():
     pipe = FromToPipeline()
-    exists = os.path.isfile(JSON_FILE)
+   
+    pipe.GenerateNode('Golfito')
 
-#  redone = {}
-#  redone[1] = {}
-#  if 'schedule' not in redone[1]:
-#      redone[1]['schedule'] = {}
-#  if 'key' not in redone[1]['schedule']:
-#      redone[1]['schedule']['key'] = []
-#  else :
-#      redone[1]['schedule']['key'].append('a')
-#
-#  if 'key' not in redone[1]['schedule']:
-#      redone[1]['schedule']['key'] = []
-#  else :
-#      redone[1]['schedule']['key'].append('a')
-#
-#  #pipe.MakeRawFromRequest('Golfito', 'Conte')
+   # pipe.MakeRawFromRequest('Golfito', 'Conte')
+   # with open('./Golfito/Conte/from_Golfito_to_Conte.json', 'r') as f:
+   #     raw = json.load(f)
+   # pipe.ConvertRawToStops(raw, True)
 
-    with open('from_Golfito_to_Conte.json', 'r') as f:
-        raw = json.load(f)
-    pipe.ConvertRawToStops(raw)
-
-   # pipe.MapDirectRoutesToJson(not exists)
    # pipe.CreateFolderFromTos(JSON_FILE, 'Golfito')
 
 
