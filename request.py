@@ -28,7 +28,19 @@ class WeekScheduleDirectRoute:
         data['b2'] = 'Search connection'
 
 
+        data = {k: str(v).encode("utf-8") for k,v in data.items()}
+
         self.__fullschedule = {}
+
+        self.__headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
+        'Cache-Control': 'max-age=0',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+}
+
         
         self.__data = data
         self.__week_dates = {'12/23': 'monday',
@@ -47,7 +59,7 @@ class WeekScheduleDirectRoute:
             if len(key) != 2:
                 raise Exception('request.py - FormatFullSchedule(): Tuple isnt of size 2')
             if discard_non_direct is True:
-                if val.get('from') != From or val.get('to' != To):
+                if val.get('from') != From or val.get('to') != To:
                     continue #bug
             day = key[0]
             #get lon lat
@@ -104,7 +116,7 @@ class WeekScheduleDirectRoute:
         if verbose is True:
             print('Verbose enabled')
 
-        r = requests.post(URL, data=self.__data)
+        r = requests.post(URL, headers = self.__headers, data=self.__data)
 
 
         file = open(RESP, "w")
@@ -132,13 +144,13 @@ class WeekScheduleDirectRoute:
             if len(ret_later) == 0:
                 ret_later = self.UpdatePostDataWithLastDate(resp) #test golfito - buenos aires
 
-            r = requests.post(URL, data=ret_later)
+            r = requests.post(URL, headers=self.__headers,data=ret_later)
             file = open(RESP, "w")
             file.write(r.text)
             file.close()
 
             ret = resp.ProcessBody()
-            self.PopulateSchedule(ret, verbose = verbose)
+            self.PopulateSchedule(ret, verbose = verbose) #can be moved to if ret later == 0
 
     def UpdatePostDataWithLastDate(self, resp):
         ret = resp.UpdateData(resp)
@@ -162,14 +174,23 @@ class WeekScheduleDirectRoute:
 def main():
   #  week = WeekScheduleDirectRoute('Golfito', 'Conte')
   #  week.Exec()
-    tt = {
 
-        {'a','b'} : {'monday'}
-    }
-   
-    res = json.dumps(tt)
 
-    tt =''
+    data = {}
+    data['fromClass'] = 'Golfito'
+    data['toClass'] = 'Ca%F1on+del+Guarco'
+    data['viaClass'] = '+'
+    data['jDate'] = '01%2F12%2F2020' #starting point #sunday, midnight, will basically pull whole week from monday
+    data['jTime'] = '13%3A59'  
+    data['addtime'] = '0'
+    data['lang'] = 'en'
+    data['b2'] = 'Search+connection'
+    r = requests.post(URL, data=data)
+    file = open(RESP, "w")
+    file.write(r.text)
+    file.close()
+
+
 
   
 

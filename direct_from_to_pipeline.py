@@ -143,27 +143,25 @@ class FromToPipeline:
         self.MapDirectRoutesToJson(not exists)
         with open(JSON_FILE, 'r', encoding='utf-8') as f:
             Map = json.load(f)
-
         Tos = Map.get(From)
-
-        raw = self.MakeRawFromRequest('Golfito',"Buenos Aires")
-#        for To in Tos:
-#            raw = self.MakeRawFromRequest(From, To)
-#            stops = self.ConvertRawToStops(raw)
+        for To in Tos:
+            print('GENERATING NODE TO ' + To)
+            raw = self.MakeRawFromRequest(From, To)
+            stops = self.ConvertRawToStops(raw)
 
 
 
 def main():
     pipe = FromToPipeline()
-   
-    pipe.GenerateNode('Golfito')
 
-   # pipe.MakeRawFromRequest('Golfito', 'Conte')
-   # with open('./Golfito/Conte/from_Golfito_to_Conte.json', 'r') as f:
-   #     raw = json.load(f)
-   # pipe.ConvertRawToStops(raw, True)
 
-   # pipe.CreateFolderFromTos(JSON_FILE, 'Golfito')
+    #pipe.GenerateNode('Golfito')
+
+    pipe.MakeRawFromRequest('Golfito', 'Cañon del Guarco')
+
+
+
+
 
 
 if __name__ == '__main__':
