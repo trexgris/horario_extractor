@@ -75,7 +75,7 @@ class FromToPipeline:
         if not os.path.isfile(p+'/'+json_name) or not force: #force = redo
             week = WeekScheduleDirectRoute(From, To)
             week.Exec(verbose=True)
-            to_write = week.FormatFullSchedule() #or here to file?
+            to_write = week.FormatFullSchedule(From=From, To=To,discard_non_direct=True) #or here to file?
             to_write['from'] = From
             to_write['to'] = To
 
@@ -145,9 +145,11 @@ class FromToPipeline:
             Map = json.load(f)
 
         Tos = Map.get(From)
-        for To in Tos:
-            raw = self.MakeRawFromRequest(From, To)
-            stops = self.ConvertRawToStops(raw)
+
+        raw = self.MakeRawFromRequest('Golfito',"Buenos Aires")
+#        for To in Tos:
+#            raw = self.MakeRawFromRequest(From, To)
+#            stops = self.ConvertRawToStops(raw)
 
 
 

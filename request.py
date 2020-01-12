@@ -41,11 +41,14 @@ class WeekScheduleDirectRoute:
          } #sunday
 
 
-    def FormatFullSchedule(self,force=False):
+    def FormatFullSchedule(self,From='', To='', discard_non_direct = False, force=False):
         ret = defaultdict(list)
         for key, val in self.__fullschedule.items():
             if len(key) != 2:
                 raise Exception('request.py - FormatFullSchedule(): Tuple isnt of size 2')
+            if discard_non_direct is True:
+                if val.get('from') != From or val.get('to' != To):
+                    continue #bug
             day = key[0]
             #get lon lat
             from_link = val.get('from_link')
@@ -100,7 +103,10 @@ class WeekScheduleDirectRoute:
     def Exec(self, verbose = False):
         if verbose is True:
             print('Verbose enabled')
+
         r = requests.post(URL, data=self.__data)
+
+
         file = open(RESP, "w")
         file.write(r.text)
         file.close()
@@ -113,7 +119,7 @@ class WeekScheduleDirectRoute:
         while True:
             if wait_until < datetime.now():
                 break
-            time.sleep(3)
+            time.sleep(1.5)
             resp = ResponseToJson(RESP)
             if resp.PastLastDate(29, verbose):
                 ret = resp.ProcessBody()
@@ -121,9 +127,9 @@ class WeekScheduleDirectRoute:
                 break
             ret_later = resp.GetLaterPost()
             if ret_later is None:
-                except 'RET_LATER IS NONE' #BUG
+            #    except 'RET_LATER IS NONE' #BUG
                 return
-            if ret_later is {}:
+            if len(ret_later) == 0:
                 ret_later = self.UpdatePostDataWithLastDate(resp) #test golfito - buenos aires
 
             r = requests.post(URL, data=ret_later)
@@ -131,8 +137,26 @@ class WeekScheduleDirectRoute:
             file.write(r.text)
             file.close()
 
+            ret = resp.ProcessBody()
+            self.PopulateSchedule(ret, verbose = verbose)
+
     def UpdatePostDataWithLastDate(self, resp):
-        resp.get
+        ret = resp.UpdateData(resp)
+        ret_later = {}
+
+
+        ret_later['fromClass'] = ret.get('from')
+        ret_later['toClass'] = ret.get('to')
+        ret_later['viaClass'] = ''
+
+        #format date
+        format_date = ret.get('date_dep')[4:] + '/2019'
+        ret_later['addtime'] = '0'
+        ret_later['lang'] = 'en'
+        ret_later['jDate'] = format_date
+        ret_later['jTime'] = ret.get('time_dep')  
+        ret_later['b2'] = 'Search connection'
+        return ret_later
 
 
 def main():

@@ -97,6 +97,19 @@ class ResponseToJson:
                     ret[lst] = tmp
         return ret
 
+    def UpdateData(self, arg):
+        ret = {}
+        table = self.__soup.find_all('table', class_="table table-striped table-bordered table-list table-responsive table table-condensed")
+        for tbody in table:
+            tbody = self.__soup.find('tbody') 
+            last = tbody.find_all('tr')[-2] #should be last date ... as the last component is a clickable
+            ret = self.ProcessSubFromTo(last) #should be one only
+            return ret
+        return ret
+            
+
+
+
     def PastLastDate(self, compare_to_this_date, verbose_date = False):
         table = self.__soup.find_all('table', class_="table table-striped table-bordered table-list table-responsive table table-condensed")
         for tbody in table: #should we test against index text?
