@@ -28,7 +28,8 @@ class WeekScheduleDirectRoute:
         data['b2'] = 'Search connection'
 
 
-        data = {k: str(v).encode("utf-8") for k,v in data.items()}
+        data = {k: str(v).encode("ISO-8859-1") for k,v in data.items()}
+
 
         self.__fullschedule = {}
 
@@ -143,7 +144,7 @@ class WeekScheduleDirectRoute:
                 return
             if len(ret_later) == 0:
                 ret_later = self.UpdatePostDataWithLastDate(resp) #test golfito - buenos aires
-
+            ret_later = {k: str(v).encode("ISO-8859-1") for k,v in ret_later.items()}
             r = requests.post(URL, headers=self.__headers,data=ret_later)
             file = open(RESP, "w")
             file.write(r.text)
