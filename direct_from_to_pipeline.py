@@ -115,17 +115,25 @@ class FromToPipeline:
                 for key, time in raw.items():
                     for val in time:
                         day = key
-                        from_lon = float(val.get('from_lon'))
-                        from_lat = float(val.get('from_lat'))
+                        from_lon = 0.0
+                        from_lat = 0.0
+                        if val.get('from_lon') is not None:
+                            from_lon = float(val.get('from_lon'))
+                        if val.get('from_lat') is not None:
+                            from_lat = float(val.get('from_lat'))
                         key_from = from_lon + from_lat
                         #NEED A CHECK FOR ALL THE VALS IDEALLY
 
 
-                        detail_for_day = {} #dep time dep arr day arr remarks
-                        detail_for_day['time_dep'] = val.get('time_dep')
-                        detail_for_day['time_arr'] = val.get('time_arr')
-                        detail_for_day['remarks'] = val.get('remarks')
-                        detail_for_day['date_arr'] = week_map.get(val.get('date_arr')[:2])
+                        detail_for_day = {} #dep time dep arr day arr remarks #TODO: IMPROVEMENT LOOP OVER KEYS
+                        if val.get('time_dep') is not None:
+                            detail_for_day['time_dep'] = val.get('time_dep')
+                        if val.get('time_arr') is not None:
+                            detail_for_day['time_arr'] = val.get('time_arr')
+                        if val.get('remarks') is not None:
+                            detail_for_day['remarks'] = val.get('remarks')
+                        if val.get('date_arr') is not None:
+                            detail_for_day['date_arr'] = week_map.get(val.get('date_arr')[:2])
                         if 'trans_name' in val:
                             detail_for_day['trans_name'] = val.get('trans_name')
                         if 'trans_tel' in val:
@@ -157,26 +165,36 @@ class FromToPipeline:
         except Exception as e:
              print(e)
 
-    def GenerateNode(self, From):
+    def GenerateNode(self, From, Tos):
+   #    Map = {}
+   #    exists = os.path.isfile(JSON_FILE)
+   #    self.MapDirectRoutesToJson(not exists)
+   #    with open(JSON_FILE, 'r', encoding='utf-8') as f:
+   #        Map = json.load(f)
+   #    Tos = Map.get(From)
+        for To in Tos:
+            print('GENERATING '+From +' TO ' + To)
+            if From == 'Agua Buena':
+                t = True
+            raw = self.MakeRawFromRequest(From, To)
+            stops = self.ConvertRawToStops(raw)
+
+    def GenerateMap(self):
         Map = {}
         exists = os.path.isfile(JSON_FILE)
         self.MapDirectRoutesToJson(not exists)
         with open(JSON_FILE, 'r', encoding='utf-8') as f:
             Map = json.load(f)
-        Tos = Map.get(From)
-        for To in Tos:
-            print('GENERATING NODE TO ' + To)
-            raw = self.MakeRawFromRequest(From, To)
-            stops = self.ConvertRawToStops(raw)
-
+        for k, v in Map.items():
+            self.GenerateNode(k, v)
 
 
 def main():
     pipe = FromToPipeline()
-   # pipe.GenerateNode('Golfito')
+    pipe.GenerateMap()
 
-    raw = pipe.MakeRawFromRequest('Golfito', 'Palmar',force=True)
-    stops = pipe.ConvertRawToStops(raw, force=True)
+    #raw = pipe.MakeRawFromRequest('28 Millas', 'Barbilla',force=True)
+  #  stops = pipe.ConvertRawToStops(raw, force=True)
 
 
 

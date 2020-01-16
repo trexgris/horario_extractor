@@ -145,7 +145,7 @@ class WeekScheduleDirectRoute:
                 self.PopulateSchedule(ret, verbose = verbose)
                 break
             ret_later = resp.GetLaterPost()
-            if ret_later is None:
+            if ret_later is None or ret_later.get('fromClass') is None:
             #    except 'RET_LATER IS NONE' #BUG
                 return
             if len(ret_later) == 0:
@@ -159,7 +159,7 @@ class WeekScheduleDirectRoute:
             ret = resp.ProcessBody()
             #tmp hack
             if lastlen == len(ret):
-                if cntretry is 0:
+                if cntretry == 0:
                     cntretry = 1
                 else:
                     cntretry = 0
