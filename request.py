@@ -17,6 +17,8 @@ SCHEDULE_FILE = 'golfito_conte_week_schedule.json'
 class WeekScheduleDirectRoute:
     
     def __init__(self, fromClass, toClass):
+        self.__from = fromClass
+        self.__to = toClass
         data = {}
         data['fromClass'] = fromClass
         data['toClass'] = toClass
@@ -32,7 +34,7 @@ class WeekScheduleDirectRoute:
 
 
         self.__fullschedule = {}
-
+        self.__lastbody = {}
         self.__headers = {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
         'Accept-Encoding': 'gzip, deflate',
@@ -78,7 +80,7 @@ class WeekScheduleDirectRoute:
                 to_lon = to_coords[0]
                 to_lat = to_coords[1]
                 val['to_lon'] = to_lon
-                val['too_lat'] = to_lat
+                val['to_lat'] = to_lat
             ret[day].append(val)
             #todo: production refactor
         return ret
@@ -101,10 +103,12 @@ class WeekScheduleDirectRoute:
                 #monday to monday
                 date = re.search(r'\d{2}/\d{2}', val.get('date_dep')).group(0)
                 if self.DateOfNextWeek(date):
-                    return True    
+                    return True
                 match_day = self.__week_dates.get(date)
-                if match_day is None:    
-                    continue                
+                if match_day == 'tuesday' and val.get('time_dep') == '05:00':
+                    t = True
+                if match_day is None:
+                    continue
                 self.__fullschedule[(match_day, key)] = val
                 if verbose is True:
                     print('Doing ' + match_day)
@@ -125,8 +129,10 @@ class WeekScheduleDirectRoute:
         file.close()
 
         delete_TO = 1
-        wait_until = datetime.now() + timedelta(minutes=30)
+        wait_until = datetime.now() + timedelta(minutes=55)
         break_loop = False
+        lastlen = 0
+        cntretry = 0
 
 #to avoid timeout -> process only day?
         while True:
@@ -151,10 +157,22 @@ class WeekScheduleDirectRoute:
             file.close()
 
             ret = resp.ProcessBody()
+            #tmp hack
+            if lastlen == len(ret):
+                if cntretry is 0:
+                    cntretry = 1
+                else:
+                    cntretry = 0
+                    break
+            else:
+                cntretry = 0
+            lastlen = len(ret)
+
+
             self.PopulateSchedule(ret, verbose = verbose) #can be moved to if ret later == 0
 
     def UpdatePostDataWithLastDate(self, resp):
-        ret = resp.UpdateData(resp)
+        ret = resp.UpdateData(From=self.__from, To=self.__to, idx=-2)
         ret_later = {}
 
 

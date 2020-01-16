@@ -72,7 +72,9 @@ class FromToPipeline:
         if not os.path.isdir(p):
             os.makedirs(p)
         json_name = 'from_'+From +'_to_'+To+'.json'
-        if not os.path.isfile(p+'/'+json_name) or not force: #force = redo
+        tot = p+'/'+json_name
+        res = os.path.isfile(tot)
+        if not os.path.isfile(tot) or force: #force = redo
             week = WeekScheduleDirectRoute(From, To)
             week.Exec(verbose=True)
             to_write = week.FormatFullSchedule(From=From, To=To,discard_non_direct=True) #or here to file?
@@ -82,6 +84,11 @@ class FromToPipeline:
             with open(p+'/'+json_name, 'w', encoding='utf-8') as fp:
                 json.dump(to_write, fp, sort_keys=True, ensure_ascii=False)
             return to_write
+        else:
+            with open(p+'/'+json_name, 'r', encoding='utf-8') as fp:
+                data = json.load(fp)
+                return data
+
 
 
     def ConvertRawToStops(self, raw, force=False):
@@ -111,6 +118,7 @@ class FromToPipeline:
                         from_lon = float(val.get('from_lon'))
                         from_lat = float(val.get('from_lat'))
                         key_from = from_lon + from_lat
+                        #NEED A CHECK FOR ALL THE VALS IDEALLY
 
 
                         detail_for_day = {} #dep time dep arr day arr remarks
@@ -118,6 +126,18 @@ class FromToPipeline:
                         detail_for_day['time_arr'] = val.get('time_arr')
                         detail_for_day['remarks'] = val.get('remarks')
                         detail_for_day['date_arr'] = week_map.get(val.get('date_arr')[:2])
+                        if 'trans_name' in val:
+                            detail_for_day['trans_name'] = val.get('trans_name')
+                        if 'trans_tel' in val:
+                            detail_for_day['trans_tel'] = val.get('trans_tel')
+                        if 'trans_link' in val:
+                            detail_for_day['trans_link'] = val.get('trans_link')
+                        if 'to_lat' in val:
+                            detail_for_day['to_lat'] = val.get('to_lat')
+                        if 'to_lon' in val:
+                            detail_for_day['to_lon'] = val.get('to_lon')
+
+#                        detail_for_day
 
                         if key_from not in stops:
                             tmp = {}
@@ -153,11 +173,10 @@ class FromToPipeline:
 
 def main():
     pipe = FromToPipeline()
+   # pipe.GenerateNode('Golfito')
 
-
-    #pipe.GenerateNode('Golfito')
-
-    pipe.MakeRawFromRequest('Golfito', 'Cañon del Guarco')
+    raw = pipe.MakeRawFromRequest('Golfito', 'Palmar',force=True)
+    stops = pipe.ConvertRawToStops(raw, force=True)
 
 
 

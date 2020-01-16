@@ -79,6 +79,12 @@ class ResponseToJson:
             if trans_info is not None:
                 ret['trans_link'] = trans_info['href']
             trans_tel = tds[6].get_text(separator='|br|', strip=True).split('|br|')            
+            if trans_tel is not None:
+                if len(trans_tel) > 0:
+                    ret['trans_name'] = trans_tel[0]
+                if len(trans_tel) > 1:
+                    ret['trans_tel'] = trans_tel[1]
+
             ret['remarks'] = tds[7].text
             return ret
         except:
@@ -97,13 +103,18 @@ class ResponseToJson:
                     ret[lst] = tmp
         return ret
 
-    def UpdateData(self, arg):
+    def MinusIdx(self, arg):
+        return 
+
+    def UpdateData(self, From, To, idx =-2):
         ret = {}
         table = self.__soup.find_all('table', class_="table table-striped table-bordered table-list table-responsive table table-condensed")
         for tbody in table:
             tbody = self.__soup.find('tbody') 
-            last = tbody.find_all('tr')[-2] #should be last date ... as the last component is a clickable
+            last = tbody.find_all('tr')[idx] #should be last date ... as the last component is a clickable
             ret = self.ProcessSubFromTo(last) #should be one only
+            if ret.get('from') != From or ret.get('to') != To:
+                return self.UpdateData(From, To, idx=idx-2)
             return ret
         return ret
             
