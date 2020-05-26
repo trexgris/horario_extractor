@@ -8,7 +8,7 @@ import codecs
 from request import WeekScheduleDirectRoute
 import types
 
-URL = 'http://horariodebuses.com/EN/cr/overview.php?lang=en'
+URL = 'https://horariodebuses.com/EN/cr/overview.php?lang=en'
 MAP_CODE = 'map.html'
 JSON_FILE  = 'COSTA_RICA_DIRECT_ROUTES.json'
 
@@ -193,7 +193,7 @@ def main():
     pipe = FromToPipeline()
     pipe.GenerateMap()
 
-    #raw = pipe.MakeRawFromRequest('28 Millas', 'Barbilla',force=True)
+  #  raw = pipe.MakeRawFromRequest('Daniel Oduber', 'Bagaces',force=True)
   #  stops = pipe.ConvertRawToStops(raw, force=True)
 
 

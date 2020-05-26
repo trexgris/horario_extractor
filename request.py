@@ -11,7 +11,7 @@ from datetime import timedelta
 from datetime import datetime, date
 
 RESP  = "resp.html"
-URL = 'http://horariodebuses.com/EN/cr/index.php'
+URL = 'https://horariodebuses.com/EN/cr/index.php'
 SCHEDULE_FILE = 'golfito_conte_week_schedule.json'
 #should be used for direct routes
 class WeekScheduleDirectRoute:
@@ -196,14 +196,15 @@ def main():
 
 
     data = {}
-    data['fromClass'] = 'Golfito'
-    data['toClass'] = 'Ca%F1on+del+Guarco'
-    data['viaClass'] = '+'
-    data['jDate'] = '01%2F12%2F2020' #starting point #sunday, midnight, will basically pull whole week from monday
-    data['jTime'] = '13%3A59'  
+    data['fromClass'] = 'Corcovado'
+    data['toClass'] = 'Carate'
+    data['viaClass'] = ''
+    data['jDate'] = '12/22/2019' #starting point #sunday, midnight, will basically pull whole week from monday
+    data['jTime'] = '00:01'  
     data['addtime'] = '0'
     data['lang'] = 'en'
-    data['b2'] = 'Search+connection'
+    data['b2'] = 'Search connection'
+
     r = requests.post(URL, data=data)
     file = open(RESP, "w")
     file.write(r.text)
