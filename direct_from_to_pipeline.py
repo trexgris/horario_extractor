@@ -3,6 +3,7 @@ import requests
 import json
 import os
 import os.path
+from glob import glob
 from bs4 import BeautifulSoup
 import codecs
 from request import WeekScheduleDirectRoute
@@ -10,6 +11,7 @@ import types
 
 URL = 'https://horariodebuses.com/EN/cr/overview.php?lang=en'
 MAP_CODE = 'map.html'
+LIST_STOPS = "list_stops_cr.html"
 JSON_FILE  = 'COSTA_RICA_DIRECT_ROUTES.json'
 
 class FromToPipeline:
@@ -188,14 +190,31 @@ class FromToPipeline:
         for k, v in Map.items():
             self.GenerateNode(k, v)
 
+    def BuildDirectConnectionsFor(self,l, s):
+        print(l)
+        # 1. need to find function from to and build folder with 2 jsons independently from the rest, an exception of some sort
+
+
+        return
+
 
 def main():
+
     pipe = FromToPipeline()
-    pipe.GenerateMap()
+   # pipe.GenerateMap()
 
   #  raw = pipe.MakeRawFromRequest('Daniel Oduber', 'Bagaces',force=True)
   #  stops = pipe.ConvertRawToStops(raw, force=True)
 
+
+  # exception 
+    exc = "San José"
+    list_subfolders_with_paths = []
+    for root, dirs, files in os.walk('./cr/'):
+        for dir in dirs:
+            list_subfolders_with_paths.append( dir )
+        break
+    pipe.BuildDirectConnectionsFor(list_subfolders_with_paths,exc)
 
 
 

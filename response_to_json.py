@@ -14,7 +14,8 @@ class ResponseToJson:
         self.__soup = BeautifulSoup(f, features="html.parser")
         self.__json = {} 
         self.__later_keys = ["fromClass","toClass","jDate","jTime","SearchForw","jRoute",
-        "tivek","gua","addtime","lastdatum","firstdatum","goback","vorher","nachher","nc","lang","viaClass"]           
+        "tivek","gua","addtime","lastdatum","firstdatum","goback","vorher","nachher","nc","lang","viaClass"]
+
 
     def GetLaterPost(self):
         ret = {}
