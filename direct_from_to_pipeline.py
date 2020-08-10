@@ -190,11 +190,10 @@ class FromToPipeline:
         for k, v in Map.items():
             self.GenerateNode(k, v)
 
-    def BuildDirectConnectionsFor(self,l, s):
-        print(l)
+    def BuildDirectConnectionsFor(self, l, s):
         # 1. need to find function from to and build folder with 2 jsons independently from the rest, an exception of some sort
-
-
+        self.GenerateNode(s, ['Golfito'])
+        
         return
 
 

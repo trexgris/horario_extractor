@@ -111,7 +111,10 @@ class WeekScheduleDirectRoute:
                     continue
                 self.__fullschedule[(match_day, key)] = val
                 if verbose is True:
+
                     print('Doing ' + match_day)
+                    if match_day == 'wednesday':
+                        continue
             except Exception  as e:
                 print(e)
                 continue
