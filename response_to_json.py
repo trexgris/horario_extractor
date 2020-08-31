@@ -2,6 +2,7 @@ import os
 import json
 import re 
 import base64
+import shutil
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 from bs4.element import Tag
@@ -10,11 +11,16 @@ from bs4.element import Tag
 #should process 1 query
 class ResponseToJson:
     def __init__(self, response_html):
+        self.__response_html = response_html
         f = open(response_html, 'r').read()
         self.__soup = BeautifulSoup(f, features="html.parser")
         self.__json = {} 
         self.__later_keys = ["fromClass","toClass","jDate","jTime","SearchForw","jRoute",
         "tivek","gua","addtime","lastdatum","firstdatum","goback","vorher","nachher","nc","lang","viaClass"]
+
+    def SaveLastResponse(self, name, dir=''):
+       # f = open(self.__response_html, 'w').write()
+       shutil.copy(self.__response_html, name)
 
 
     def GetLaterPost(self):

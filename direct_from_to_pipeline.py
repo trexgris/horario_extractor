@@ -69,16 +69,17 @@ class FromToPipeline:
             except Exception as e:
                 print(e)
 
+
     def MakeRawFromRequest(self, From, To, force=False):
-        p = str(From)+'/'+str(To)
-        if not os.path.isdir(p):
+        p = str(From)+'/'+str(To) #Path built from From/To
+        if not os.path.isdir(p): #if path doesnt exist, we make it
             os.makedirs(p)
-        json_name = 'from_'+From +'_to_'+To+'.json'
+        json_name = 'from_'+From +'_to_'+To+'.json' #raw request json name, not optimised by stops
         tot = p+'/'+json_name
         res = os.path.isfile(tot)
-        if not os.path.isfile(tot) or force: #force = redo
-            week = WeekScheduleDirectRoute(From, To)
-            week.Exec(verbose=True)
+        if not os.path.isfile(tot) or force: #force = redo #if doesnt exist or redo enabled, we create it
+            week = WeekScheduleDirectRoute(From, To) #will build the structure holdhing all the data regarding the from to request
+            week.Exec(verbose=True) 
             to_write = week.FormatFullSchedule(From=From, To=To,discard_non_direct=True) #or here to file?
             to_write['from'] = From
             to_write['to'] = To
@@ -176,8 +177,7 @@ class FromToPipeline:
    #    Tos = Map.get(From)
         for To in Tos:
             print('GENERATING '+From +' TO ' + To)
-            if From == 'Agua Buena':
-                t = True
+           
             raw = self.MakeRawFromRequest(From, To)
             stops = self.ConvertRawToStops(raw)
 

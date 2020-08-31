@@ -14,6 +14,8 @@ RESP  = "resp.html"
 URL = 'https://horariodebuses.com/EN/cr/index.php'
 SCHEDULE_FILE = 'golfito_conte_week_schedule.json'
 #should be used for direct routes
+
+# data holder
 class WeekScheduleDirectRoute:
     
     def __init__(self, fromClass, toClass):
@@ -95,7 +97,6 @@ class WeekScheduleDirectRoute:
         return False
 
     def PopulateSchedule(self, body_dict, verbose = False):
-        ret = {}
         if len(body_dict) == 0:
             return True
         for key, val in body_dict.items():
@@ -105,8 +106,7 @@ class WeekScheduleDirectRoute:
                 if self.DateOfNextWeek(date):
                     return True
                 match_day = self.__week_dates.get(date)
-                if match_day == 'tuesday' and val.get('time_dep') == '05:00':
-                    t = True
+
                 if match_day is None:
                     continue
                 self.__fullschedule[(match_day, key)] = val
@@ -121,36 +121,53 @@ class WeekScheduleDirectRoute:
         return False
     
     def Exec(self, verbose = False):
-        if verbose is True:
+
+        if verbose is True: #based on the data provided from the "from " "to" requets (strings, city names)
             print('Verbose enabled')
 
-        r = requests.post(URL, headers = self.__headers, data=self.__data)
+        #POST request
+        r = requests.post(URL, headers = self.__headers, data=self.__data) #the data in the post request, built from the object ctor
 
-
+        #write response to file
         file = open(RESP, "w")
         file.write(r.text)
         file.close()
 
-        delete_TO = 1
-        wait_until = datetime.now() + timedelta(minutes=55)
+        wait_until = datetime.now() + timedelta(minutes=55) #time out of 1h for the looping in case it gets stuck, super dirty...
+        
         break_loop = False
         lastlen = 0
         cntretry = 0
+        delete_TO = 1
+
 
 #to avoid timeout -> process only day?
         while True:
-            if wait_until < datetime.now():
+            if wait_until < datetime.now(): #timeout check
                 break
-            time.sleep(1.5)
-            resp = ResponseToJson(RESP)
-            if resp.PastLastDate(29, verbose):
-                ret = resp.ProcessBody()
-                self.PopulateSchedule(ret, verbose = verbose)
+            time.sleep(1.5) #limit spamming requests to the server
+
+            resp = ResponseToJson(RESP) #will read the html response (file lvl)
+
+            if resp.PastLastDate(29, verbose): #if we are past the 29th of dec 2019,
+                                               # we are out of the week scope, we just aim to get 1 week of data
+                ret = resp.ProcessBody() # <body> part of the html response
+
+                self.PopulateSchedule(ret, verbose = verbose) #will populate the ___fullschedule variable
                 break
+
             ret_later = resp.GetLaterPost()
-            if ret_later is None or ret_later.get('fromClass') is None:
+            if self.IsLaterPostInvalid(ret_later):
+                ret_later = self.UpdatePostDataWithLastDate(resp);
+
+    
+    #        if ret_later is None or ret_later.get('fromClass') is None:
             #    except 'RET_LATER IS NONE' #BUG
+                #resp.SaveLastResponse('bug.html')
+            if self.IsLaterPostInvalid(ret_later):    
                 return
+            else:
+                resp.SaveLastResponse('ok.html')    
             if len(ret_later) == 0:
                 ret_later = self.UpdatePostDataWithLastDate(resp) #test golfito - buenos aires
             ret_later = {k: str(v).encode("ISO-8859-1") for k,v in ret_later.items()}
@@ -173,6 +190,10 @@ class WeekScheduleDirectRoute:
 
 
             self.PopulateSchedule(ret, verbose = verbose) #can be moved to if ret later == 0
+
+    def IsLaterPostInvalid(self, ret_later):
+        return (ret_later is None or ret_later.get('fromClass') is None)
+    
 
     def UpdatePostDataWithLastDate(self, resp):
         ret = resp.UpdateData(From=self.__from, To=self.__to, idx=-2)
