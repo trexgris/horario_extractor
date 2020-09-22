@@ -196,8 +196,10 @@ class WeekScheduleDirectRoute:
     
 
     def UpdatePostDataWithLastDate(self, resp):
-        ret = resp.UpdateData(From=self.__from, To=self.__to, idx=-2)
         ret_later = {}
+        ret = resp.UpdateData(From=self.__from, To=self.__to, idx=-2)
+        if not ret:
+            return ret_later 
 
 
         ret_later['fromClass'] = ret.get('from')

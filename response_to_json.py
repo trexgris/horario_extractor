@@ -118,7 +118,13 @@ class ResponseToJson:
         table = self.__soup.find_all('table', class_="table table-striped table-bordered table-list table-responsive table table-condensed")
         for tbody in table:
             tbody = self.__soup.find('tbody') 
-            last = tbody.find_all('tr')[idx] #should be last date ... as the last component is a clickable
+
+
+            elems = tbody.find_all('tr')
+            if len(elems) < abs(idx):
+                return ret 
+            last = elems[idx] #should be last date ... as the last component is a clickable
+                
             ret = self.ProcessSubFromTo(last) #should be one only
             if ret.get('from') != From or ret.get('to') != To:
                 return self.UpdateData(From, To, idx=idx-2)

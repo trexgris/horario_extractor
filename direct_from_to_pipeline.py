@@ -71,7 +71,7 @@ class FromToPipeline:
 
 
     def MakeRawFromRequest(self, From, To, force=False):
-        p = str(From)+'/'+str(To) #Path built from From/To
+        p ='./cr/'+ str(From)+'/'+str(To) #Path built from From/To
         if not os.path.isdir(p): #if path doesnt exist, we make it
             os.makedirs(p)
         json_name = 'from_'+From +'_to_'+To+'.json' #raw request json name, not optimised by stops
@@ -109,7 +109,7 @@ class FromToPipeline:
             }
             From = raw.get('from')
             To = raw.get('to')
-            p = str(From)+'/'+str(To)
+            p = './cr/' + str(From)+'/'+str(To)
             stops_name = 'from_'+From+'_to_'+To+'_stops.json'
             stops = {}
             del raw['from']
@@ -192,7 +192,8 @@ class FromToPipeline:
 
     def BuildDirectConnectionsFor(self, l, s):
         # 1. need to find function from to and build folder with 2 jsons independently from the rest, an exception of some sort
-        self.GenerateNode(s, ['Golfito'])
+        #self.GenerateNode(s, ['Golfito'])
+        self.GenerateNode(s, l)
         
         return
 
@@ -215,6 +216,13 @@ def main():
         break
     pipe.BuildDirectConnectionsFor(list_subfolders_with_paths,exc)
 
+    for city in list_subfolders_with_paths:
+        print('GENERATING '+city +' TO ' + exc)           
+        raw = pipe.MakeRawFromRequest(city, exc)
+        stops = pipe.ConvertRawToStops(raw)
+
+
+    
 
 
 
