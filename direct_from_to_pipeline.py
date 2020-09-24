@@ -15,27 +15,28 @@ LIST_STOPS = "list_stops_cr.html"
 JSON_FILE  = 'COSTA_RICA_DIRECT_ROUTES.json'
 
 class FromToPipeline:
+    country_nodes_path = './country_nodes_map/' 
     def __init__(self):
-        self.country_nodes_path = './country_nodes_map/'
-        if not os.path.exists(self.country_nodes_path):
-            os.mkdir(self.country_nodes_path)        
+        if not os.path.exists(FromToPipeline.country_nodes_path):
+            os.mkdir(FromToPipeline.country_nodes_path)        
     #refactor
     def generate_nodes_map(self, url, out_file_name, overwrite = False):
-        r = requests.get(url)
-        content = r.text
-        m = re.findall('bindPopup\("(.*?)",{', content, re.DOTALL)
-        json_map = {}
-        for el in m:
-            ret = self.__process(el)
-            if len(ret) == 2:
-                json_map[ret[0]] = ret[1]
-        fpath = self.country_nodes_path+out_file_name+'.json'
-        if overwrite or not os.path.exists(fpath):            
+
+        fpath = FromToPipeline.country_nodes_path+out_file_name+'.json'
+        if overwrite or not os.path.exists(fpath):
+            r = requests.get(url)
+            content = r.text
+            m = re.findall('bindPopup\("(.*?)",{', content, re.DOTALL)
+            json_map = {}
+            for el in m:
+                ret = self.__process(el)
+                if len(ret) == 2:
+                    json_map[ret[0]] = ret[1]            
             with open(fpath, 'w+', encoding='utf-8') as fp:
                 json.dump(json_map, fp, sort_keys=True, ensure_ascii=False)
     def get_nodes_map(self, name):
         data = {}
-        with open(self.country_nodes_path+name+'.json','r', encoding='utf-8') as json_file:
+        with open(FromToPipeline.country_nodes_path+name+'.json','r', encoding='utf-8') as json_file:
             data = json.load(json_file)
         return data
     def __process(self, elem):

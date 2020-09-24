@@ -9,16 +9,18 @@ from direct_from_to_pipeline import FromToPipeline
 
 
 class MainUi(Tk):
+    overviews_path = './overviews_links/overviews.json'
     def __init__(self):
         Tk.__init__(self)
         self.__create_engine()
         self.__create_wdigets()
     def __create_engine(self):
         self.__ftpipe = FromToPipeline()
-    def __on_country_selected(self, name, overviews):
+    def __on_country_selected(self, name, overviews, nodes_box_ptr):
         self.__ftpipe.generate_nodes_map(overviews[name], name)
         nodes = self.__ftpipe.get_nodes_map(name)
-      #  self.tk.tab_parent.
+        nodes_box_ptr.delete(0, END)
+        nodes_box_ptr.insert(END, *nodes.keys())
     def __create_wdigets(self):
         tab_parent = ttk.Notebook(self)
         # country data generation 
@@ -29,10 +31,10 @@ class MainUi(Tk):
         nodes_box.config(yscrollcommand = nodes_scrollbar.set) 
         nodes_scrollbar.config(command = nodes_box.yview)
         overviews = {}
-        with open('./overviews_links/overviews.json', 'r', encoding='utf-8') as f:
+        with open(MainUi.overviews_path, 'r', encoding='utf-8') as f:
             overviews = json.load(f)
         __c_list_var = StringVar(self)
-        __c_list_var.trace('w', lambda *args:  self.__on_country_selected(__c_list_var.get(), overviews))
+        __c_list_var.trace('w', lambda *args:  self.__on_country_selected(__c_list_var.get(), overviews, nodes_box))
         country_dd = tk.OptionMenu(tab_c_roadmap, __c_list_var, *overviews.keys())
         country_dd.grid(row=0, column=0, padx=15, pady=15)
         nodes_box.grid(row=1, column=0, padx=15, pady=15)
