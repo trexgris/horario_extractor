@@ -16,17 +16,38 @@ JSON_FILE  = 'COSTA_RICA_DIRECT_ROUTES.json'
 
 class FromToPipeline:
     def __init__(self):
-        pass
-
-    def Process(self, elem):
+        self.country_nodes_path = './country_nodes_map/'
+        if not os.path.exists(self.country_nodes_path):
+            os.mkdir(self.country_nodes_path)        
+    #refactor
+    def generate_nodes_map(self, url, out_file_name, overwrite = False):
+        r = requests.get(url)
+        content = r.text
+        m = re.findall('bindPopup\("(.*?)",{', content, re.DOTALL)
+        json_map = {}
+        for el in m:
+            ret = self.__process(el)
+            if len(ret) == 2:
+                json_map[ret[0]] = ret[1]
+        fpath = self.country_nodes_path+out_file_name+'.json'
+        if overwrite or not os.path.exists(fpath):            
+            with open(fpath, 'w+', encoding='utf-8') as fp:
+                json.dump(json_map, fp, sort_keys=True, ensure_ascii=False)
+    def get_nodes_map(self, name):
+        data = {}
+        with open(self.country_nodes_path+name+'.json','r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+        return data
+    def __process(self, elem):
         tos = []
-        soup = BeautifulSoup(elem)
+        soup = BeautifulSoup(elem, features="html.parser")
         From = soup.find('b').text
         tmp = soup.find_all('a')
         for l in tmp:
             tos.append(re.sub('<[^<]+?>', '', str(l.next)))
         return (From, tos)
 
+    #refactor
     def Read(self, force):
         #and casts to json
         if os.path.isfile(JSON_FILE) and force is False:
@@ -36,14 +57,17 @@ class FromToPipeline:
             data = open_file.read()
             m = re.findall('bindPopup\("(.*?)",{', data, re.DOTALL)
             for el in m:
-                ret = self.Process(el)
+                ret = self.__process(el)
                 if len(ret) == 2 :
                     json_file[ret[0]] = ret[1]
 
         with open(JSON_FILE, 'w', encoding='utf-8') as fp:
             json.dump(json_file, fp, sort_keys=True, ensure_ascii=False)
 
-    def MapDirectRoutesToJson(self, force = False):
+
+
+
+    def MapDirectRoutesToJson(self, force = False): 
         if force is False:
             return
         r = requests.get(URL)
