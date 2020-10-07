@@ -1,11 +1,13 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"path": "overviews_links"
 		},
 		{
-			"path": "overviews_links"
+			"path": "country_nodes_map"
+		},
+		{
+			"path": "costa_rica"
 		}
-	],
-	"settings": {}
+	]
 }

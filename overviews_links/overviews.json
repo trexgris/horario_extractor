@@ -1,0 +1,5 @@
+{   "costa_rica":"https://horariodebuses.com/EN/cr/overview.php?lang=en",
+    "nicaragua": "https://horariodebuses.com/EN/ni/overview.php?lang=en",
+    "el_salvador": "https://horariodebuses.com/EN/sv/overview.php?lang=en",
+    "panama": "https://horariodebuses.com/EN/pa/overview.php?lang=en"
+}
