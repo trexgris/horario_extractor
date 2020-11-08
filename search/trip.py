@@ -82,7 +82,9 @@ class Trip:
                         faster_transition = self.__get_faster_transition(stops_ids, dep_date)
                     #get next date, iterate on it
 
-                    
+    def build_graph2(self, country_path_file):
+        graph = Graph()        
+
 
 if __name__ == "__main__":
     trip = Trip('../costa_rica/')

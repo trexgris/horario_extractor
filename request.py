@@ -111,10 +111,7 @@ class WeekScheduleDirectRoute:
                     continue
                 self.__fullschedule[(match_day, key)] = val
                 if verbose is True:
-
                     print('Doing ' + match_day)
-                    if match_day == 'wednesday':
-                        continue
             except Exception  as e:
                 print(e)
                 continue
@@ -135,17 +132,17 @@ class WeekScheduleDirectRoute:
 
         wait_until = datetime.now() + timedelta(minutes=55) #time out of 1h for the looping in case it gets stuck, super dirty...
         
-        break_loop = False
         lastlen = 0
         cntretry = 0
-        delete_TO = 1
+
 
 
 #to avoid timeout -> process only day?
+        last_ok_ret_later = {}
         while True:
             if wait_until < datetime.now(): #timeout check
                 break
-            time.sleep(1.5) #limit spamming requests to the server
+            time.sleep(0.75) #limit spamming requests to the server
 
             resp = ResponseToJson(RESP) #will read the html response (file lvl)
 
@@ -158,29 +155,40 @@ class WeekScheduleDirectRoute:
 
             ret_later = resp.GetLaterPost()
             if self.IsLaterPostInvalid(ret_later):
-                ret_later = self.UpdatePostDataWithLastDate(resp);
-
-    
-    #        if ret_later is None or ret_later.get('fromClass') is None:
-            #    except 'RET_LATER IS NONE' #BUG
-                #resp.SaveLastResponse('bug.html')
-            if self.IsLaterPostInvalid(ret_later):    
-                return
+                ret_later = self.UpdatePostDataWithLastDate(resp)
+            if self.IsLaterPostInvalid(ret_later):
+                if self.IsLaterPostInvalid(last_ok_ret_later):
+                    return
+                else:
+                    ret_later = last_ok_ret_later
             else:
+                last_ok_ret_later = ret_later
                 resp.SaveLastResponse('ok.html')    
             if len(ret_later) == 0:
-                ret_later = self.UpdatePostDataWithLastDate(resp) #test golfito - buenos aires
+                ret_later = self.UpdatePostDataWithLastDate(resp) 
             ret_later = {k: str(v).encode("ISO-8859-1") for k,v in ret_later.items()}
             r = requests.post(URL, headers=self.__headers,data=ret_later)
             file = open(RESP, "w")
             file.write(r.text)
             file.close()
 
-            ret = resp.ProcessBody()
-            #tmp hack
+            ret = resp.ProcessBody() 
             if lastlen == len(ret):
                 if cntretry == 0:
                     cntretry = 1
+                    ret_later = resp.GetLaterPost()
+                    if True:
+                        ret_later = self.UpdatePostDataWithLastDate(resp)
+                        ret_later = {k: str(v).encode("ISO-8859-1") for k,v in ret_later.items()}
+                        r = requests.post(URL, headers=self.__headers,data=ret_later)
+                        file = open(RESP, "w")
+                        file.write(r.text)
+                        file.close()
+                    if self.IsLaterPostInvalid(ret_later):    
+                        return
+                    else:
+                        resp.SaveLastResponse('ok.html')
+                    continue    
                 else:
                     cntretry = 0
                     break
