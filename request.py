@@ -14,7 +14,7 @@ RESP  = "resp.html"
 URL = 'https://horariodebuses.com/EN/cr/index.php'
 SCHEDULE_FILE = 'golfito_conte_week_schedule.json'
 #should be used for direct routes
-
+MAX_LIMIT = 46
 # data holder
 class WeekScheduleDirectRoute:
     
@@ -145,6 +145,7 @@ class WeekScheduleDirectRoute:
             time.sleep(0.75) #limit spamming requests to the server
 
             resp = ResponseToJson(RESP) #will read the html response (file lvl)
+            ret = resp.ProcessBody() 
 
             if resp.PastLastDate(29, verbose): #if we are past the 29th of dec 2019,
                                                # we are out of the week scope, we just aim to get 1 week of data
@@ -173,27 +174,43 @@ class WeekScheduleDirectRoute:
             file.close()
 
             ret = resp.ProcessBody() 
-            if lastlen == len(ret):
-                if cntretry == 0:
-                    cntretry = 1
-                    ret_later = resp.GetLaterPost()
-                    if True:
-                        ret_later = self.UpdatePostDataWithLastDate(resp)
-                        ret_later = {k: str(v).encode("ISO-8859-1") for k,v in ret_later.items()}
-                        r = requests.post(URL, headers=self.__headers,data=ret_later)
-                        file = open(RESP, "w")
-                        file.write(r.text)
-                        file.close()
-                    if self.IsLaterPostInvalid(ret_later):    
-                        return
-                    else:
-                        resp.SaveLastResponse('ok.html')
-                    continue    
-                else:
-                    cntretry = 0
-                    break
-            else:
-                cntretry = 0
+            if len(ret) == MAX_LIMIT:
+                ret_later = resp.GetLaterPost()
+                ret_later = self.UpdatePostDataWithLastDate(resp)
+                ret_later = {k: str(v).encode("ISO-8859-1") for k,v in ret_later.items()}
+                r = requests.post(URL, headers=self.__headers,data=ret_later)
+                file = open(RESP, "w")
+                file.write(r.text)
+                file.close()
+                resp = ResponseToJson(RESP) #will read the html response (file lvl)
+                ret = resp.ProcessBody()
+                if len(ret) == MAX_LIMIT:
+                    break 
+
+           #if lastlen == len(ret):
+           #    if cntretry == 0:
+           #        cntretry = 1
+           #        ret_later = resp.GetLaterPost()
+           #        ret_later = self.UpdatePostDataWithLastDate(resp)
+           #        ret_later = {k: str(v).encode("ISO-8859-1") for k,v in ret_later.items()}
+           #        r = requests.post(URL, headers=self.__headers,data=ret_later)
+           #        file = open(RESP, "w")
+           #        file.write(r.text)
+           #        file.close()
+           #        resp = ResponseToJson(RESP) #will read the html response (file lvl)
+           #        ret = resp.ProcessBody() 
+
+           #        if self.IsLaterPostInvalid(ret_later):    
+           #            return
+           #        else:
+           #            resp.SaveLastResponse('ok.html')
+           #        continue    
+           #    else:
+           #        cntretry = 0
+  
+           #        break
+           #else:
+           #    cntretry = 0
             lastlen = len(ret)
 
 

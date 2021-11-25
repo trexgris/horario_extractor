@@ -25,6 +25,7 @@ class MainUi(Tk):
     def __create_widgets(self):
         tab_parent = ttk.Notebook(self)
         # tabs
+        
         tab_c_roadmap = ttk.Frame(tab_parent)
         tab_map_algo = ttk.Frame(tab_parent)
 
@@ -40,6 +41,7 @@ class MainUi(Tk):
             overviews = json.load(f)
         c_list_var = StringVar(self)
         c_list_var.trace('w', lambda *args:  self.__on_country_selected(c_list_var.get(), overviews, nodes_box))
+     
         country_dd = tk.OptionMenu(tab_c_roadmap, c_list_var, *overviews.keys())
         generate_map_button = tk.Button(tab_c_roadmap, text='Generate Map', command=lambda: self.__generate_map_on_country_selected(name=c_list_var.get(), overwrite=True))
         text_field_city_exception = tk.Text(tab_c_roadmap, height=2, width=30)
